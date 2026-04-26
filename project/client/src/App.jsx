@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ProductDetails from "./pages/ProductDetails";
 import Footer from "./components/Footer";
 import CollectionPage from "./pages/CollectionPage";
+import Search from "./pages/Search";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/buy" element={<Buy />} />
             <Route path="/sell" element={<Sell />} />
             <Route path="/rent" element={<Rent />} />
+            <Route path="/search" element={<Search />} />
             <Route path="/collections/:categorySlug" element={<CollectionPage />} />
             <Route path="/notifications" element={<Notification />} />
             <Route path="/login" element={<Signin />} />

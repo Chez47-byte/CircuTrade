@@ -19,6 +19,11 @@ export default function Navbar() {
   const [collectionsOpen, setCollectionsOpen] = useState(false);
   const isAuth = hasToken();
 
+  const openSearch = () => {
+    navigate("/search");
+    setOpen(false);
+  };
+
   const navItems = [
     { name: "Home", path: "/" },
     { name: "Shop", path: "/buy" },
@@ -136,9 +141,9 @@ export default function Navbar() {
             <div className="hidden flex-1 justify-center md:flex lg:flex-none lg:max-w-[21rem] xl:max-w-[23rem]">
               <button
                 type="button"
-                onClick={() => navigate("/buy")}
+                onClick={openSearch}
                 className="nav-search-shell"
-                aria-label="Browse inventory"
+                aria-label="Search products"
               >
                 <Search size={15} />
                 <span>Search products, categories, and curated edits</span>
@@ -195,13 +200,12 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => {
-                  navigate("/buy");
-                  setOpen(false);
+                  openSearch();
                 }}
                 className="nav-search-shell nav-search-shell-mobile"
               >
                 <Search size={15} />
-                <span>Browse inventory</span>
+                <span>Search products</span>
               </button>
 
               <div className="space-y-0.5">
