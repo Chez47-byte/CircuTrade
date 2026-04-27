@@ -19,7 +19,13 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: "https://circu-trade-c7a1.vercel.app/",
+  origin: function (origin, callback) {
+    if (!origin || origin.includes("https://circu-trade.vercel.app/") || origin.includes("https://circutrade.onrender.com")) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 app.use(express.json({ limit: "15mb" }));
