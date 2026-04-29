@@ -1,25 +1,30 @@
 import API from "../api/axios";
 
-const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID;
+// Access the key directly inside the function to ensure it's fresh
+const getRzpKey = () => import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 const ensureRazorpayLoaded = () => {
-  if (typeof window === "undefined" || typeof window.Razorpay !== "function") {
-    throw new Error("Razorpay checkout is not available right now.");
+  if (typeof window === "undefined" || !window.Razorpay) {
+    throw new Error("Razorpay SDK not loaded. Please check your internet or ad-blocker.");
   }
 };
 
 export const handlePayment = async ({ bookingId, customerName = "", customerEmail = "", customerPhone = "" }) => {
   ensureRazorpayLoaded();
+  
+  const RAZORPAY_KEY = getRzpKey();
 
   if (!RAZORPAY_KEY) {
-    throw new Error("Missing Razorpay key. Set VITE_RAZORPAY_KEY_ID in the client environment.");
+    console.error("Environment variables found:", import.meta.env);
+    throw new Error("Missing Razorpay key in environment.");
   }
 
+  // Create the order on your Render backend
   const { data: order } = await API.post("/payment/order", { bookingId });
 
   return new Promise((resolve, reject) => {
-    const razor = new window.Razorpay({
-      key: RAZORPAY_KEY,
+    const options = {
+      key: RAZORPAY_KEY.trim(), // Added .trim() to prevent invisible space errors
       amount: order.amount,
       currency: order.currency,
       name: "CircuTrade",
@@ -30,15 +35,10 @@ export const handlePayment = async ({ bookingId, customerName = "", customerEmai
         email: customerEmail,
         contact: customerPhone,
       },
-      theme: {
-        color: "#1c1511",
-      },
+      theme: { color: "#1c1511" },
       handler: async (response) => {
         try {
-          await API.post("/payment/verify", {
-            ...response,
-            bookingId,
-          });
+          await API.post("/payment/verify", { ...response, bookingId });
           resolve(response);
         } catch (err) {
           reject(err);
@@ -47,12 +47,22 @@ export const handlePayment = async ({ bookingId, customerName = "", customerEmai
       modal: {
         ondismiss: () => reject(new Error("Payment was cancelled.")),
       },
-    });
+    };
 
-    razor.on("payment.failed", (response) => {
-      reject(new Error(response?.error?.description || "Payment failed."));
-    });
+    try {
+      const razor = new window.Razorpay(options);
+      
+      razor.on("payment.failed", (err) => {
+        reject(new Error(err.error.description || "Payment failed."));
+      });
 
-    razor.open();
+      // Use a tiny timeout to ensure the browser has finished any pending redirects/renders
+      setTimeout(() => {
+        razor.open();
+      }, 100);
+      
+    } catch (error) {
+      reject(new Error("Could not initialize Razorpay: " + error.message));
+    }
   });
 };
