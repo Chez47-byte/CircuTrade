@@ -18,9 +18,16 @@ import errorHandler from "./middleware/errorMiddleware.js";
 const app = express();
 const port = process.env.PORT || 5000;
 
+const allowedOrigins = [
+  "https://circu-trade.vercel.app", 
+  "https://circutrade.onrender.com"
+];
+
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || origin.includes("https://circu-trade.vercel.app/") || origin.includes("https://circutrade.onrender.com")) {
+    // allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
