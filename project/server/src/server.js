@@ -25,19 +25,22 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or Postman)
+    // 1. Allow requests with no origin (like mobile apps)
     if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
+
+    // 2. Define allowed domains
+    const isVercel = origin.endsWith(".vercel.app");
+    const isRender = origin.includes("onrender.com");
+    const isLocal = origin.includes("localhost");
+
+    if (isVercel || isRender || isLocal) {
       callback(null, true);
     } else {
-      console.log("Blocked by CORS:", origin); // Helps you see the real origin in Render logs
+      console.log("Blocked by CORS:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  credentials: true
 }));
 app.use(express.json({ limit: "15mb" }));
 app.use(express.urlencoded({ extended: true, limit: "15mb" }));
