@@ -1,5 +1,6 @@
 import API from "../api/axios";
 
+console.log("RAZORPAY KEY:", RAZORPAY_KEY);
 const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID;
 const RAZORPAY_CHECKOUT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
 
